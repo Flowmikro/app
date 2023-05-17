@@ -22,9 +22,16 @@ class Plan(models.Model):
                                                      MaxValueValidator(100)
                                                  ])
 
+    def seva(self, *args, **kwargs):
+
+        for subscription in subscriptions.all():
+            set_price.delay(subscription.id)
+
+        return super().save(*args, **kwargs)
+
 
 class Subscription(models.Model):
-    client = models.ForeignKey(Client, related_name='Подписки', on_delete=models.PROTECT)
-    service = models.ForeignKey(Service, related_name='Подписки', on_delete=models.PROTECT)
-    plan = models.ForeignKey(Plan, related_name='Подписки', on_delete=models.PROTECT)
+    client = models.ForeignKey(Client, related_name='subscriptions', on_delete=models.PROTECT)
+    service = models.ForeignKey(Service, related_name='subscriptions', on_delete=models.PROTECT)
+    plan = models.ForeignKey(Plan, related_name='subscriptions', on_delete=models.PROTECT)
     price = models.PositiveIntegerField(default=0)
