@@ -22,10 +22,14 @@ class Plan(models.Model):
                                                      MaxValueValidator(100)
                                                  ])
 
-    def seva(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__discount_price = self.discount_price
 
-        for subscription in subscriptions.all():
-            set_price.delay(subscription.id)
+    def save(self, set_price=None, *args, **kwargs):
+        if self.discount_price != self.__discount_price:
+            for subscription in self.subscriptions.all():
+                set_price.delay(subscription.id)
 
         return super().save(*args, **kwargs)
 
