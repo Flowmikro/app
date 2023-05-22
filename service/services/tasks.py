@@ -1,12 +1,14 @@
 from celery import shared_task
-
-from services.models import Subscription
+from django.db.models import F
 
 
 @shared_task
 def set_price(subscription_id):
-    subscription = Subscription.objects.get(id=subscription_id)
-    new_price = subscription.service.full_price - subscription.service.full_price * subscription.plan.discount_price / 100
-    subscription.price = new_price
-    subscription.save()
+    from services.models import Subscription
 
+    subscription = Subscription.objects.filter(id=subscription_id).annotate(
+        annotated_price=F('service__full_price') -
+                        F('service__full_price') * F('plan__discount_percent') / 100.00).first()
+
+    subscription.price = subscription.annotated_price
+    subscription.save()
